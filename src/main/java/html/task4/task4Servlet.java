@@ -78,7 +78,7 @@ public class task4Servlet extends HttpServlet {
 
             out.println("<table><tr><th>Date</th><th>ID</th><th>Nominal</th><th>Value</th></tr>");
             if(elements.getLength() == 0){
-                out.println("<p>Информации нет</p>");
+                out.println("<tr><td>Информации нет</td></tr>");
             }
             else{
                 for(int i = 0; i < elements.getLength(); i++){

@@ -6,6 +6,8 @@ import org.w3c.dom.NodeList;
 
 import java.io.*;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
 import javax.xml.parsers.DocumentBuilder;
@@ -14,24 +16,13 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 @WebServlet(name = "helloServlet", value = "/hello-servlet")
 public class HelloServlet extends HttpServlet {
-    private int tryy = 0;
-
+    Map<String, Integer> ids = new HashMap<>();
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        response.setContentType("text/html");
-        System.out.println(tryy);
-//        boolean  contains = false;
-//        int tryy = 0;
-//        for(Cookie item : request.getCookies()){
-//            if(item.getName().equals("tryes")){
-//                contains = true;
-//                tryy = Integer.parseInt(item.getValue());
-//            }
-//        }
-//        if(!contains){
-//        Cookie newCookie = new Cookie("tryes", "0");
-//        newCookie.setMaxAge(-1);
-//            response.addCookie(newCookie);
-//        }
+        response.setContentType("text/html;charset=Windows-1251");
+        HttpSession session = request.getSession();
+        if(!ids.containsKey(session.getId())){
+            ids.put(session.getId(),1);
+        }
 
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -41,7 +32,7 @@ public class HelloServlet extends HttpServlet {
             PrintWriter out = response.getWriter();
             Date date = new Date();
 
-            if(tryy < 3) {
+            if(ids.get(session.getId()) < 3) {
                 boolean ans = false;
                 for (int i = 0; i < userElements.getLength(); i++) {
                     Node user = userElements.item(i);
@@ -60,14 +51,15 @@ public class HelloServlet extends HttpServlet {
                     out.println("<html><body>");
                 }
                 else{
-//                    response.addCookie(new Cookie("tryes", String.valueOf(tryy+1)));
-                    tryy++;
-                    response.sendRedirect("index.jsp");
+                    int buff = ids.get(session.getId()) + 1;
+                    ids.put(session.getId(), buff);
+                    request.setAttribute("message", (4-ids.get(session.getId())+" attempts " + session.getId()));
+                    request.getRequestDispatcher("index.jsp").forward(request, response);
                 }
             }
             else {
                 out.println("<html><body>");
-                out.println("<h2>" + "Attemps ended! No entry!" + "</h2>");
+                out.println("<h2>" + "Attempts ended! No entry!" + "</h2>");
                 out.println("<html><body>");
             }
         }

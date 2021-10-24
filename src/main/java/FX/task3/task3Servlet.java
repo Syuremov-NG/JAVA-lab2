@@ -19,36 +19,43 @@ public class task3Servlet extends HttpServlet {
     private int tryy = 0;
     boolean ans = false;
     boolean logged = false;
-    String loggedUser = "";
+
+    Map<String, Integer> ids = new HashMap<>();
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        if(!ids.containsKey(request.getParameter("id"))){
+            ids.put(request.getParameter("id"),1);
+        }
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document document = builder.parse(new File("users.xml"));
+            Document document = builder.parse(new File("E:/Programming/TomCAT/bin/users.xml"));
             NodeList userElements = document.getDocumentElement().getElementsByTagName("user");
             PrintWriter out = response.getWriter();
             Date date = new Date();
             ans = false;
-            if(!logged) {
+            if(ids.get(request.getParameter("id")) < 3) {
                 for (int i = 0; i < userElements.getLength(); i++) {
                     Node user = userElements.item(i);
-                    if (request.getParameter("login").equals(user.getAttributes().getNamedItem("login").getNodeValue())
-                            && request.getParameter("password").equals(user.getAttributes().getNamedItem("password").getNodeValue()) ) {
+                    if (request.getParameter("login") != null && request.getParameter("login").equals(user.getAttributes().item(0).getTextContent()) &&
+                            request.getParameter("password") != null && request.getParameter("password").equals(user.getAttributes().item(1).getTextContent())) {
                         ans = true;
-                        out.println("ans=true;time=" + date +";login="+request.getParameter("login"));
-                        logged = true;
-                        loggedUser = request.getParameter("login");
                         break;
                     }
                 }
-                if(!ans){
-                    out.println("ans=false;tryy=" + tryy);
-                    tryy++;
+                if(ans){
+                    out.println("ans=true;time=" + date +";login="+request.getParameter("login"));
+                    logged = true;
+                }
+                else{
+                    out.println("ans=false;tryy=" + ids.get(request.getParameter("id"))+";id="+request.getParameter("id") );
+                    int buff = ids.get(request.getParameter("id")) + 1;
+                    ids.put(request.getParameter("id"), buff);
                 }
             }
             else{
-                out.println("ans=true;time=" + date +";login="+loggedUser);
+                out.println("ans=false;tryy="+ids.get(request.getParameter("id"))+ ";id="+request.getParameter("id"));
             }
         }
         catch (Exception e){
@@ -58,6 +65,21 @@ public class task3Servlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        String str = null;
+        StringBuffer data = new StringBuffer();
+        Map<String,String> resp = new HashMap<>();
+        BufferedReader in = new BufferedReader(new InputStreamReader(request.getInputStream()));
+        while((str=in.readLine()) != null) data.append(str);
+        String[] res = data.toString().split(";");
+        for(String item : res){
+            String[] itemS = item.split("=");
+            resp.put(itemS[0], itemS[1]);
+        }
+        if(resp.containsKey("id")&&!ids.containsKey(resp.get("id"))){
+            ids.put(resp.get("id"),1);
+        }
+
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
@@ -66,42 +88,37 @@ public class task3Servlet extends HttpServlet {
             PrintWriter out = response.getWriter();
             Date date = new Date();
 
-            if(!logged){
-                String str = null;
-                StringBuffer data = new StringBuffer();
-                Map<String,String> resp = new HashMap<>();
-                BufferedReader in = new BufferedReader(new InputStreamReader(request.getInputStream()));
-                while((str=in.readLine()) != null) data.append(str);
-                String[] res = data.toString().split(";");
-                for(String item : res){
-                    String[] itemS = item.split("=");
-                    resp.put(itemS[0], itemS[1]);
-                }
+            if(ids.get(resp.get("id")) < 3){
 
                 ans = false;
                 for (int i = 0; i < userElements.getLength(); i++) {
                     Node user = userElements.item(i);
-                    if (resp.get("login").equals(user.getAttributes().getNamedItem("login").getNodeValue())
-                            && resp.get("password").equals(user.getAttributes().getNamedItem("password").getNodeValue()) ) {
+                    if (resp.get("login").equals(user.getAttributes().item(0).getTextContent())
+                            && resp.get("password").equals(user.getAttributes().item(1).getTextContent()) ) {
                         ans = true;
-                        out.println("ans=true;time=" + date +";login="+resp.get("login"));
-                        logged = true;
-                        loggedUser = resp.get("login");
                         break;
                     }
                 }
-                if(!ans){
-                    out.println("ans=false;tryy=" + tryy);
-                    tryy++;
+                if(ans){
+                    out.println("ans=true;time=" + date +";login="+resp.get("login"));
+                    logged = true;
+                }
+                else{
+                    out.println("ans=false;tryy=" + ids.get(resp.get("id")));
+                    int buff = ids.get(resp.get("id")) + 1;
+                    ids.put(resp.get("id"), buff);
                 }
             }
             else{
-                out.println("ans=true;time=" + date +";login="+loggedUser);
+                out.println("ans=false;tryy="+ids.get(resp.get("id")));
             }
         }
         catch (Exception e){
             e.printStackTrace();
         }
+    }
+
+    private void test(HttpServletRequest request, NodeList userElements, PrintWriter out, Date date) {
     }
 
     @Override

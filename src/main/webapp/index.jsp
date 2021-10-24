@@ -20,6 +20,7 @@
                 <td><input type="submit" value="Submit"></td>
             </tr>
         </table>
+        <h3>${message}</h3>
         <a href="task2.jsp">Go to task 2</a>
     </form>
 

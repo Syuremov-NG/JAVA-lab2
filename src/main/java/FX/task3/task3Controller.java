@@ -5,10 +5,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -20,7 +17,7 @@ import javafx.scene.layout.AnchorPane;
 import javax.servlet.http.HttpServletRequest;
 
 public class task3Controller {
-
+    String id = UUID.randomUUID().toString();
     @FXML
     private ResourceBundle resources;
 
@@ -75,7 +72,6 @@ public class task3Controller {
             else if(resp.get("ans").equals("false")){
                 ans.setText("Attempts left "+(3-Integer.parseInt(resp.get("tryy"))));
             }
-
             in.close();
             con.disconnect();
         } catch(Exception e) {
@@ -86,9 +82,11 @@ public class task3Controller {
     private void get(String inf){
         URL url = null;
         HttpURLConnection con = null;
+
         try {
             url = new URL("http://localhost:8080/task3Servlet?" + inf);
             con = (HttpURLConnection)url.openConnection();
+            System.out.println(con.getURL());
             con.setRequestMethod("GET");
             con.setRequestProperty("Content-Type", "text/spline");
             con.setConnectTimeout(5000);
@@ -114,6 +112,7 @@ public class task3Controller {
                     "Content-Type", "application/x-www-form-urlencoded");
             con.setConnectTimeout(5000);
             con.setReadTimeout(5000);
+            System.out.println(inf);
             byte[] data = inf.getBytes(StandardCharsets.UTF_8);
             con.setDoOutput(true);
             try (DataOutputStream wr = new DataOutputStream(con.getOutputStream())) {
@@ -127,21 +126,26 @@ public class task3Controller {
 
     @FXML
     void doGET(ActionEvent event) {
-        get("login=" + login.getText() + "&password=" + password.getText());
+        if(login.getText().length() != 0 && password.getText().length() != 0){
+            get("login=" + login.getText() + "&password=" + password.getText()+"&id="+id);
+        }
+        else {
+            get("login=none&password=none&id="+id);
+        }
     }
 
     @FXML
     void doPOST(ActionEvent event) {
-        if(login.getText().length() != 0){
-            post("login=" + login.getText() + ";password=" + password.getText());
+        if(login.getText().length() != 0 && password.getText().length() != 0){
+            post("login=" + login.getText() + ";password=" + password.getText()+";id="+id);
         }
         else {
-            post("login=none;password=none");
+            post("login=none;password=none;id="+id);
         }
     }
 
     @FXML
     void initialize() throws IOException {
-        post("login=none;password=none");
+
     }
 }
